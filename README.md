@@ -11,7 +11,7 @@ Automatización mínima con Selenium WebDriver en Python: abre un navegador, vis
 
 ## 2) Clonar el repositorio
 ```bash
-git clone <URL_DE_TU_REPO>
+git clone https://github.com/cadara-unibe/tendencias-desarrollo-software-actividad-6.git --depth 1
 cd tendencias-desarrollo-software-actividad-6
 ````
 
