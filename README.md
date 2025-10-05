@@ -84,3 +84,77 @@ tendencias-desarrollo-software-actividad-6/
 
 ```
 ```
+
+```
+En caso de aviso es **Gatekeeper** de macOS bloqueando `chromedriver` por no estar “notarizado”. Tienes tres formas rápidas de resolverlo (elige 1):
+```
+
+## Opción A — Permitirlo desde Preferencias del Sistema (la más simple)
+
+1. Ejecuta tu script una vez para que aparezca el aviso.
+2. Ve a ** > System Settings > Privacy & Security**.
+3. Baja hasta **Security** y verás “*chromedriver was blocked*” → pulsa **Allow Anyway**.
+4. Vuelve a correr el script; te saldrá un diálogo “Open/Cancel” → elige **Open**.
+
+## Opción B — Quitar la cuarentena con `xattr` (línea de comandos)
+
+### Si lo instalaste con Homebrew
+
+1. Localiza el binario real:
+
+   ```bash
+   which chromedriver
+   ls -l /opt/homebrew/bin/chromedriver          # mira a dónde apunta el symlink
+   ```
+2. Quita la cuarentena **en el binario real** (no solo en el symlink). Por ejemplo:
+
+   ```bash
+   xattr -dr com.apple.quarantine /opt/homebrew/Caskroom/chromedriver/*/*/chromedriver
+   ```
+3. Verifica que ya no tenga el atributo:
+
+   ```bash
+   xattr -l /opt/homebrew/Caskroom/chromedriver/*/*/chromedriver
+   ```
+4. Ejecuta de nuevo tu prueba.
+
+### Si Selenium (4.6+) descargó el driver automáticamente
+
+1. Busca el binario en la caché de Selenium (suele estar en tu home):
+
+   ```bash
+   find ~/Library/Caches/selenium -name chromedriver
+   ```
+2. Quita la cuarentena:
+
+   ```bash
+   xattr -dr com.apple.quarantine ~/Library/Caches/selenium/**/chromedriver
+   ```
+3. Ejecuta tu prueba otra vez.
+
+## Opción C — Evitar `chromedriver` manual y usar **Selenium Manager** (recomendado)
+
+1. Asegúrate de tener Selenium reciente:
+
+   ```bash
+   pip install -U selenium
+   ```
+2. Usa tu script **sin** rutas de driver:
+
+   ```python
+   from selenium import webdriver
+   from selenium.webdriver.chrome.options import Options
+
+   opts = Options()
+   opts.add_argument("--headless=new")  # opcional
+   driver = webdriver.Chrome(options=opts)  # Selenium Manager gestiona el driver
+   ```
+3. Si aún aparece el aviso, aplica **A** o **B** sobre el binario que Selenium descarga (ruta en `~/Library/Caches/selenium/...`).
+
+---
+
+### Tips rápidos
+
+* En Apple Silicon (M1/M2), usa el `chromedriver` **arm64** (Homebrew ya instala arm64 por defecto).
+* Si ves el mismo aviso otra vez, es porque macOS aplicó la cuarentena al **binario efectivo**; asegúrate de quitarla **en el destino real del symlink**.
+* Alternativa: usa **Firefox** (`geckodriver`) o **Edge** si tu entorno lo permite (mismo patrón con `xattr`).
